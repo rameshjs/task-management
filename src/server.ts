@@ -3,6 +3,7 @@ import cors from "cors";
 import helmet from "helmet";
 import { env } from "./config/env";
 import { authRouter } from "./api/auth/authRouter";
+import { taskRouter } from "./api/task/taskRouter";
 import { errorHandler } from "./common/middleware/errorHandler";
 import { logger } from "./common/utils/logger";
 
@@ -19,6 +20,7 @@ app.use((req, _res, next) => {
 });
 
 app.use("/api/auth", authRouter);
+app.use("/api/tasks", taskRouter);
 
 app.use(errorHandler);
 
