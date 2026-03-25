@@ -18,7 +18,6 @@ async function post(path: string, body: Record<string, unknown>) {
 describe("POST /api/auth/register", () => {
   test("registers a new user successfully", async () => {
     const { status, json } = await post("/register", {
-      name: "John",
       email: "john@example.com",
       password: "password123",
     });
@@ -34,7 +33,6 @@ describe("POST /api/auth/register", () => {
     await createTestUser({ email: "dup@example.com" });
 
     const { status, json } = await post("/register", {
-      name: "Dup",
       email: "dup@example.com",
       password: "password123",
     });
@@ -44,8 +42,16 @@ describe("POST /api/auth/register", () => {
     expect(json.message).toContain("already in use");
   });
 
-  test("rejects missing fields", async () => {
+  test("rejects missing password", async () => {
     const { status, json } = await post("/register", { email: "a@b.com" });
+
+    expect(status).toBe(400);
+    expect(json.success).toBe(false);
+    expect(json.message).toContain("Validation error");
+  });
+
+  test("rejects missing email", async () => {
+    const { status, json } = await post("/register", { password: "password123" });
 
     expect(status).toBe(400);
     expect(json.success).toBe(false);
@@ -54,7 +60,6 @@ describe("POST /api/auth/register", () => {
 
   test("rejects invalid email", async () => {
     const { status, json } = await post("/register", {
-      name: "Bad",
       email: "not-an-email",
       password: "password123",
     });
@@ -65,7 +70,6 @@ describe("POST /api/auth/register", () => {
 
   test("rejects short password", async () => {
     const { status, json } = await post("/register", {
-      name: "Short",
       email: "short@example.com",
       password: "12345",
     });

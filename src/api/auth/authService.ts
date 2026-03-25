@@ -10,7 +10,7 @@ function generateToken(userId: string) {
 }
 
 export const authService = {
-  async register(data: { name: string; email: string; password: string }) {
+  async register(data: { email: string; password: string }) {
     const existing = await User.findOne({ email: data.email });
     if (existing) {
       return ServiceResponse.failure("Email already in use", null, StatusCodes.CONFLICT);
@@ -21,7 +21,7 @@ export const authService = {
 
     return ServiceResponse.success(
       "User registered successfully",
-      { user: { id: user.id, name: user.name, email: user.email }, token },
+      { user: { id: user.id, email: user.email }, token },
       StatusCodes.CREATED,
     );
   },
@@ -40,7 +40,7 @@ export const authService = {
     const token = generateToken(user.id);
 
     return ServiceResponse.success("Login successful", {
-      user: { id: user.id, name: user.name, email: user.email },
+      user: { id: user.id, email: user.email },
       token,
     });
   },

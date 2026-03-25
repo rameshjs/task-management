@@ -2,9 +2,8 @@ import { User } from "../api/user/userModel";
 import jwt from "jsonwebtoken";
 import { env } from "../config/env";
 
-export async function createTestUser(overrides?: Partial<{ name: string; email: string; password: string }>) {
+export async function createTestUser(overrides?: Partial<{ email: string; password: string }>) {
   const userData = {
-    name: "Test User",
     email: "test@example.com",
     password: "password123",
     ...overrides,
