@@ -23,6 +23,14 @@ export const UpdateTaskSchema = z.object({
     .refine((b) => Object.keys(b).length > 0, "At least one field is required"),
 });
 
+export const GetTasksQuerySchema = z.object({
+  query: z.object({
+    status: z.enum(["todo", "in-progress", "done"]).optional(),
+    priority: z.enum(["low", "medium", "high"]).optional(),
+    search: z.string().optional(),
+  }),
+});
+
 export const TaskIdSchema = z.object({
   params: z.object({
     id: z.string().min(1, "Task ID is required"),

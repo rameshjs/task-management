@@ -3,8 +3,22 @@ import { Task } from "./taskModel";
 import { ServiceResponse } from "../../common/models/serviceResponse";
 
 export const taskService = {
-  async getAll(userId: string) {
-    const tasks = await Task.find({ user: userId }).sort({ createdAt: -1 });
+  async getAll(userId: string, filters: { status?: string; priority?: string; search?: string } = {}) {
+    const query: Record<string, unknown> = { user: userId };
+
+    if (filters.status) {
+      query.status = filters.status;
+    }
+
+    if (filters.priority) {
+      query.priority = filters.priority;
+    }
+
+    if (filters.search) {
+      query.title = { $regex: filters.search, $options: "i" };
+    }
+
+    const tasks = await Task.find(query).sort({ createdAt: -1 });
     return ServiceResponse.success("Tasks retrieved successfully", tasks);
   },
 

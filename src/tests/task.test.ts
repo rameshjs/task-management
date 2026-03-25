@@ -97,6 +97,80 @@ describe("GET /api/tasks", () => {
     expect(json.data).toEqual([]);
   });
 
+  test("filters tasks by status", async () => {
+    const { token } = await createTestUser();
+
+    await req("/", { method: "POST", token, body: validTask });
+    await req("/", { method: "POST", token, body: { ...validTask, title: "Done Task", status: "done" } });
+    await req("/", { method: "POST", token, body: { ...validTask, title: "In Progress", status: "in-progress" } });
+
+    const { status, json } = await req("/?status=done", { token });
+
+    expect(status).toBe(200);
+    expect(json.data).toHaveLength(1);
+    expect(json.data[0].status).toBe("done");
+  });
+
+  test("filters tasks by priority", async () => {
+    const { token } = await createTestUser();
+
+    await req("/", { method: "POST", token, body: { ...validTask, priority: "high" } });
+    await req("/", { method: "POST", token, body: { ...validTask, priority: "low" } });
+    await req("/", { method: "POST", token, body: validTask });
+
+    const { status, json } = await req("/?priority=high", { token });
+
+    expect(status).toBe(200);
+    expect(json.data).toHaveLength(1);
+    expect(json.data[0].priority).toBe("high");
+  });
+
+  test("searches tasks by title", async () => {
+    const { token } = await createTestUser();
+
+    await req("/", { method: "POST", token, body: { ...validTask, title: "Buy groceries" } });
+    await req("/", { method: "POST", token, body: { ...validTask, title: "Clean house" } });
+    await req("/", { method: "POST", token, body: { ...validTask, title: "Buy milk" } });
+
+    const { status, json } = await req("/?search=buy", { token });
+
+    expect(status).toBe(200);
+    expect(json.data).toHaveLength(2);
+    expect(json.data.every((t: any) => t.title.toLowerCase().includes("buy"))).toBe(true);
+  });
+
+  test("combines status, priority, and search filters", async () => {
+    const { token } = await createTestUser();
+
+    await req("/", { method: "POST", token, body: { title: "Buy groceries", description: "food", priority: "high" } });
+    await req("/", { method: "POST", token, body: { title: "Buy milk", description: "food", priority: "low" } });
+    await req("/", { method: "POST", token, body: { title: "Clean house", description: "chores", priority: "high" } });
+
+    const { status, json } = await req("/?search=buy&priority=high", { token });
+
+    expect(status).toBe(200);
+    expect(json.data).toHaveLength(1);
+    expect(json.data[0].title).toBe("Buy groceries");
+  });
+
+  test("rejects invalid status filter", async () => {
+    const { token } = await createTestUser();
+
+    const { status, json } = await req("/?status=invalid", { token });
+
+    expect(status).toBe(400);
+    expect(json.success).toBe(false);
+  });
+
+  test("rejects invalid priority filter", async () => {
+    const { token } = await createTestUser();
+
+    const { status, json } = await req("/?priority=urgent", { token });
+
+    expect(status).toBe(400);
+    expect(json.success).toBe(false);
+  });
+
   test("returns only the authenticated user's tasks", async () => {
     const { token: token1 } = await createTestUser({ email: "user1@example.com" });
     const { token: token2 } = await createTestUser({ email: "user2@example.com" });

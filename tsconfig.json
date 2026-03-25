@@ -3,6 +3,7 @@
     "lib": ["ESNext"],
     "target": "ESNext",
     "module": "Preserve",
+    "types": ["bun"],
     "moduleDetection": "force",
     "allowJs": true,
 

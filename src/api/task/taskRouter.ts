@@ -2,15 +2,16 @@ import { Router } from "express";
 import type { Response } from "express";
 import { authenticate, type AuthRequest } from "../../common/middleware/authenticate";
 import { validateRequest } from "../../common/middleware/validateRequest";
-import { CreateTaskSchema, UpdateTaskSchema, TaskIdSchema } from "./taskValidation";
+import { CreateTaskSchema, UpdateTaskSchema, TaskIdSchema, GetTasksQuerySchema } from "./taskValidation";
 import { taskService } from "./taskService";
 
 export const taskRouter = Router();
 
 taskRouter.use(authenticate);
 
-taskRouter.get("/", async (req: AuthRequest, res: Response) => {
-  const response = await taskService.getAll(req.userId as string);
+taskRouter.get("/", validateRequest(GetTasksQuerySchema), async (req: AuthRequest, res: Response) => {
+  const { status, priority, search } = req.query as { status?: string; priority?: string; search?: string };
+  const response = await taskService.getAll(req.userId as string, { status, priority, search });
   res.status(response.statusCode).json(response);
 });
 
